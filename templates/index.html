@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Transcript Fetcher</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        .input-group button {
+            padding: 10px 20px;
+            background: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .input-group button:hover {
+            background: #0056b3;
+        }
+        .results {
+            margin-top: 20px;
+        }
+        .results pre {
+            background: #f4f4f4;
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>YouTube Transcript Fetcher</h1>
+        <div class="input-group">
+            <label for="videoUrls">YouTube Video URLs (comma-separated):</label>
+            <input type="text" id="videoUrls" placeholder="Enter YouTube video URLs">
+        </div>
+        <div class="input-group">
+            <button onclick="fetchTranscripts()">Fetch Transcripts</button>
+        </div>
+        <div class="results" id="results"></div>
+    </div>
+
+    <script>
+        async function fetchTranscripts() {
+            const videoUrls = document.getElementById('videoUrls').value.split(',').map(url => url.trim());
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = 'Fetching transcripts...';
+
+            try {
+                const response = await fetch('/fetch_transcripts', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ urls: videoUrls })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                const transcripts = await response.json();
+                resultsDiv.innerHTML = '';
+
+                for (const videoUrl in transcripts) {
+                    const transcript = transcripts[videoUrl];
+                    const pre = document.createElement('pre');
+                    pre.textContent = `Transcript for ${videoUrl}:\n\n${transcript}`;
+                    resultsDiv.appendChild(pre);
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `Error: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>
